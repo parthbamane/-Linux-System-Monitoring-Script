@@ -314,17 +314,3 @@ pip3 show psutil
 # Reinstall if necessary
 pip3 install --upgrade psutil
 ```
-
-## License
-
-This project is open source and available under the MIT License.
-
-## Contributing
-
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
-
----
-
-**Author:** Your Name  
-**Created:** October 2025  
-**Last Updated:** October 2025

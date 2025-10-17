@@ -1,136 +1,139 @@
-#!/bin/bash
-# ==============================================================
-# Linux System Monitoring Script on AWS EC2
-# ==============================================================
-# This script guides you through setting up system monitoring
-# on an AWS EC2 instance using Python to log CPU, memory, and disk usage.
-# ==============================================================
+Linux System Monitoring Script on AWS EC2
 
-# --------------------------------------------------------------
-# PREREQUISITES
-# --------------------------------------------------------------
-# 1. AWS Account
-# 2. Basic knowledge of Linux command line
-# 3. SSH client / terminal installed on your local system
-# --------------------------------------------------------------
+This project sets up a Python script to monitor basic system resources (CPU, Memory, Disk) on an AWS EC2 instance and logs the data periodically using cron. Everything is included here — setup, script, and execution.
 
-# --------------------------------------------------------------
-# STEP 1: LAUNCH AN AWS EC2 INSTANCE
-# --------------------------------------------------------------
-# 1. Open AWS Management Console > EC2 > Launch Instance
-# 2. Choose an AMI (Amazon Linux 2 or Ubuntu Server)
-# 3. Select instance type: t2.micro (Free Tier eligible)
-# 4. Configure default settings for network and storage
-# 5. Add a Security Group rule to allow SSH on port 22
-# 6. Launch the instance and download the .pem key file
-# --------------------------------------------------------------
+Table of Contents
 
-# --------------------------------------------------------------
-# STEP 2: CONNECT TO YOUR EC2 INSTANCE
-# --------------------------------------------------------------
-# Replace placeholders below with your key file and EC2 public IP
+Prerequisites
 
-# For Ubuntu Server
+Step 1: Launch an AWS EC2 Instance
+
+Step 2: Connect to Your EC2 Instance
+
+Step 3: Install Python and Dependencies
+
+Step 4: Create the Monitoring Script
+
+Step 5: Test the Script Manually
+
+Step 6: Automate with Cron
+
+Viewing Logs
+
+Optional Enhancements
+
+Repository Structure
+
+Prerequisites
+
+An AWS Account
+
+Basic knowledge of the Linux command line
+
+A terminal or SSH client installed on your local machine
+
+Step 1: Launch an AWS EC2 Instance
+
+# 1. Navigate to AWS Management Console → EC2 → Launch Instance.
+# 2. Choose an AMI, like Amazon Linux 2 or Ubuntu Server.
+# 3. Select an instance type, like t2.micro (eligible for the Free Tier).
+# 4. Configure network and storage settings (defaults are usually fine).
+# 5. Set up a Security Group to allow SSH (port 22) traffic from your IP.
+# 6. Launch the instance and download your new .pem key file.
+
+
+Step 2: Connect to Your EC2 Instance
+
+# Use the ssh command with your downloaded key to connect.
+# Replace the path and public IP with your own.
+
+# Example for an Ubuntu AMI
 ssh -i /path/to/your-key.pem ubuntu@<EC2_PUBLIC_IP>
 
-# For Amazon Linux 2
+# Example for an Amazon Linux 2 AMI
 ssh -i /path/to/your-key.pem ec2-user@<EC2_PUBLIC_IP>
-# --------------------------------------------------------------
 
-# --------------------------------------------------------------
-# STEP 3: INSTALL PYTHON AND DEPENDENCIES
-# --------------------------------------------------------------
-# Ensure Python 3 is installed
+
+Step 3: Install Python and Dependencies
+
+# First, verify Python 3 is installed (it usually is).
 python3 --version
 
-# Update package lists (for Ubuntu/Debian)
+# Update package lists (for Ubuntu/Debian systems).
 sudo apt update
 
-# Install Python pip and 'psutil' library
+# Install pip for Python 3 and the psutil library.
 sudo apt install python3-pip -y
 pip3 install psutil
-# --------------------------------------------------------------
 
-# --------------------------------------------------------------
-# STEP 4: CREATE THE MONITORING SCRIPT
-# --------------------------------------------------------------
-# Create and open the monitoring script
+
+Step 4: Create the Monitoring Script
+
+# Create and open a new Python file using a text editor like nano.
 nano linux_monitor.py
 
-# Copy the contents below into nano, then save and close (CTRL+O, Enter, CTRL+X)
-: '
-#!/usr/bin/env python3
-import psutil
-from datetime import datetime
 
-log_file = "/tmp/system_monitor.log"
+Copy your Python script code into the editor.
 
-def get_usage():
-    cpu = psutil.cpu_percent(interval=1)
-    memory = psutil.virtual_memory().percent
-    disk = psutil.disk_usage("/").percent
-    return cpu, memory, disk
+# The Python monitoring script should be written here.
 
-def log_usage():
-    cpu, memory, disk = get_usage()
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    entry = f"{timestamp} - CPU: {cpu}% | Memory: {memory}% | Disk: {disk}%\\n"
-    with open(log_file, "a") as f:
-        f.write(entry)
-    print(f"Successfully logged: {entry.strip()}")
 
-if __name__ == "__main__":
-    log_usage()
-'
-# --------------------------------------------------------------
+Save the file and exit the editor (Ctrl + O, Enter, then Ctrl + X in nano).
 
-# --------------------------------------------------------------
-# STEP 5: TEST THE SCRIPT MANUALLY
-# --------------------------------------------------------------
+Step 5: Test the Script Manually
+
+# Run the script directly from the command line to test it.
 python3 linux_monitor.py
-# Expected output example:
-# Successfully logged: 2025-10-17 15:10:42 - CPU: 13.1% | Memory: 45.2% | Disk: 72.8%
-# --------------------------------------------------------------
 
-# --------------------------------------------------------------
-# STEP 6: AUTOMATE USING CRON
-# --------------------------------------------------------------
-# Open crontab
+
+You should see a single line of output confirming that the log was written.
+
+# Example Output
+Successfully logged: 2025-10-17 14:25:12 - CPU Usage: 12.5% | Memory Usage: 45.3% | Disk Usage: 70.1%
+
+
+Step 6: Automate with Cron
+
+Use cron to schedule the script to run at a regular interval.
+
+# Open the crontab editor.
 crontab -e
 
-# Add the line below to schedule the script every 5 minutes
-*/5 * * * * /usr/bin/python3 /home/ubuntu/linux_monitor.py
-# Explanation:
-#   */5 * * * *   → runs every 5 minutes
-#   /usr/bin/python3 → full path to Python 3
-#   /home/ubuntu/linux_monitor.py → path to your script
-# --------------------------------------------------------------
 
-# --------------------------------------------------------------
-# VIEWING LOGS
-# --------------------------------------------------------------
-# View complete log file
+Add the following line to the bottom of the file to run the script every 5 minutes. Ensure the path to your script is correct.
+
+*/5 * * * * /usr/bin/python3 /home/ubuntu/linux_monitor.py
+
+
+*/5 * * * *: Runs the command every 5 minutes.
+
+/usr/bin/python3: The absolute path to the Python interpreter.
+
+/home/ubuntu/linux_monitor.py: The absolute path to your script.
+
+Viewing Logs
+
+The script appends output to a log file in the /tmp directory.
+
+# View the entire log file from the beginning.
 cat /tmp/system_monitor.log
 
-# Stream logs in real time
+# View the last few lines and follow the file for new updates.
 tail -f /tmp/system_monitor.log
-# --------------------------------------------------------------
 
-# --------------------------------------------------------------
-# OPTIONAL ENHANCEMENTS
-# --------------------------------------------------------------
-# - Email or Slack alerts when CPU > 90%
-# - Send logs to AWS CloudWatch for centralized monitoring
-# - Use Grafana, Kibana, or AWS QuickSight for visualization
-# - Track additional metrics (network I/O, per-process usage)
-# --------------------------------------------------------------
 
-# --------------------------------------------------------------
-# REPOSITORY STRUCTURE
-# --------------------------------------------------------------
-# .
-# ├── linux_monitor.py      # Python monitoring script
-# └── README.md             # This bash-style setup guide
-# --------------------------------------------------------------
+Optional Enhancements
 
-# END OF SCRIPT
+Alerting: Modify the script to send an email or a Slack notification if usage exceeds a certain threshold (e.g., CPU > 90%).
+
+Centralized Logging: Use a service like AWS CloudWatch Logs to send logs to a central location for easier analysis and long-term storage.
+
+Data Visualization: Ingest the log data into a tool like Grafana, Kibana, or AWS QuickSight to create dashboards and visualize resource trends over time.
+
+More Metrics: Expand the script to monitor other system metrics, such as network I/O, temperature, or individual process resource usage.
+
+Repository Structure
+
+.
+├── linux_monitor.py      # The Python monitoring script
+└── README.md             # This setup guide
